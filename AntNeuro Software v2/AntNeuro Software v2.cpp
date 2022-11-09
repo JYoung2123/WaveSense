@@ -9,7 +9,7 @@
 #include <thread>
 #include <array>
 #include <iostream> // console io
-#include <conio.h> // For _kbhit();
+#include <conio.h> // For _kbhit()
 
 #include <lsl_cpp.h>
 #include <time.h>
@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 	using namespace eemagine::sdk;
 	factory fact("eego-SDK.dll");;
 	amplifier* amp = fact.getAmplifier(); // Get an amplifier
-	//stream* eegStream = amp->OpenEegStream(500);
 	stream* eegStream = amp->OpenImpedanceStream();
 
 	// Open LSL stream
@@ -65,7 +64,8 @@ int main(int argc, char *argv[])
 	double starttime = ((double)clock()) / CLOCKS_PER_SEC;
 	unsigned t = 0;
 
-	while (!_kbhit()) // Loop until any key gets pressed
+	char ch;
+	while (true) // Loop forever until 'i' key gets pressed
 	{
 		//amp->StartTriggerOut(amp->getChannelList());
 
@@ -83,8 +83,38 @@ int main(int argc, char *argv[])
 		//std::cout << amp->getSamplingRatesAvailable() << std::endl;
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		// Need to sleep less than 1s otherwise data may be lost
+		if (_kbhit()) { //check for key press
+			ch = getch();
+			if (ch == 'i')
+				break;
+		}
+	}
+	cout << "Impedance data stream stopped, starting voltage data stream." << endl;
+
+	delete eegStream;
+
+	eegStream = amp->OpenEegStream(500);
+	samplingrate = 250;
+
+	while (true) // Loop forever until 'v' key gets pressed
+	{
+		buffer buf = eegStream->getData(); // Retrieve data from stream
+		for (int c = 0; c < n_channels; c++) {
+			sample[c] = buf.getSample(c, 0);
+			cout << "Channel " << c << ": " << sample[c] << endl;
+		}
+		outlet.push_sample(sample);
+		std::this_thread::sleep_for(std::chrono::milliseconds(4));
+		// Need to sleep less than 1s otherwise data may be lost
+
+		if (_kbhit()) { // check for key press
+			ch = getch();
+			if (ch == 'v')
+				break;
+		}
 	}
 
+	cout << "Voltage data stream stopped." << endl;
 
 	delete eegStream;
 	delete amp; // Make sure to delete the amplifier objects to release resources
