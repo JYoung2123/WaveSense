@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	using namespace eemagine::sdk;
 	factory fact("eego-SDK.dll");;
 	amplifier* amp = fact.getAmplifier(); // Get an amplifier
-	stream* eegStream = amp->OpenImpedanceStream();
+	stream* impStream = amp->OpenImpedanceStream();
 
 	// Open LSL stream
 	std::string name, type;
@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
 			<< "This opens a stream under some user-defined name and with a user-defined content "
 			"type."
 			<< std::endl;
-		std::cout << "SendData Name Type [n_channels=8] [srate=100] [max_buffered=360]"
-			<< std::endl;
+		//std::cout << "SendData Name Type [n_channels=8] [srate=100] [max_buffered=360]"
+		//	<< std::endl;
 		std::cout
 			<< "Please enter the stream name and the stream type"
 			<< std::endl;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	{
 		//amp->StartTriggerOut(amp->getChannelList());
 
-		buffer buf = eegStream->getData(); // Retrieve data from stream
+		buffer buf = impStream->getData(); // Retrieve data from stream
 		//std::cout << "Samples read: " << buf.getSampleCount() << std::endl;
 		//std::cout << "Channel count: " << buf.getChannelCount() << std::endl;
 		for (int c = 0; c < n_channels; c++) {
@@ -91,9 +91,9 @@ int main(int argc, char *argv[])
 	}
 	cout << "Impedance data stream stopped, starting voltage data stream." << endl;
 
-	delete eegStream;
+	delete impStream;
 
-	eegStream = amp->OpenEegStream(500);
+	stream* eegStream = amp->OpenEegStream(1000,1,2.5);
 	samplingrate = 250;
 
 	while (true) // Loop forever until 'v' key gets pressed
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 			cout << "Channel " << c << ": " << sample[c] << endl;
 		}
 		outlet.push_sample(sample);
-		std::this_thread::sleep_for(std::chrono::milliseconds(4));
+		std::this_thread::sleep_for(std::chrono::milliseconds(25));
 		// Need to sleep less than 1s otherwise data may be lost
 
 		if (_kbhit()) { // check for key press
