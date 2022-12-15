@@ -1,4 +1,5 @@
-// WaveSense Recorder.cpp : Defines the entry point for the application.
+// WaveSense Recorder.cpp : Software application that records data from antNeuro amplifier
+// and streams it over a local network. Requires a usb-c connection with the amplifer to work.
 //
 
 #define EEGO_SDK_BIND_DYNAMIC
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 		vFile.open(vFileName); //open file to start writing voltage data
 	}
 
-	stream* eegStream = amp->OpenEegStream(1000,1,2.5);
+	stream* eegStream = amp->OpenEegStream(1000,1,2.5); // antNeuro software has issues with setting different voltage ranges
 
 	while (true) // Loop forever until 'v' key gets pressed
 	{
